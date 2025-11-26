@@ -1,0 +1,97 @@
+name: dev_pipeline
+on:
+  push:
+      branches:
+          - main
+  pull_request:
+      branches:
+          - main
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  working-directory: ./Environment/dev
+
+jobs:
+    Build:
+        runs-on: self-hosted
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v5.0.0
+
+            - name: az login
+              uses: Azure/login@v2.3.0
+
+              with:
+                  client-id: ${{ secrets.AZURE_CLIENT_ID }}
+                  tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+                  subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+            - name: Initialize Terraform
+              run: terraform init
+              working-directory: ${{ env.working-directory }}
+
+            - name: Validate Terraform
+              run: terraform validate
+              working-directory: ${{ env.working-directory }}
+
+            - name: Plan Terraform
+              run: terraform plan -out=tfplan
+              working-directory: ${{ env.working-directory }}
+
+            - name: Upload Plan Artifact
+              uses: actions/upload-artifact@v4
+              with:
+                name: terraform-plan
+                path: ${{ env.working-directory }}/tfplan
+
+    Tests:
+        runs-on: self-hosted
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v2
+
+            - name: az login
+              uses: azure/login@v1
+
+              with:
+                  client-id: ${{ secrets.AZURE_CLIENT_ID }}
+                  tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+                  subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+            - name: tfsec tests
+              run: |
+                  curl -L https://raw.githubusercontent.com/aquasecurity/tfsec/master/scripts/install_linux.sh | bash
+                  tfsec .
+              working-directory: ./Environment/dev
+    Deploy:
+        needs: [Build, Tests]
+        runs-on: self-hosted
+        if: needs.Build.result == 'success' && needs.Tests.result == 'success' && github.ref == 'refs/heads/main'
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v2
+
+            - name: az login
+              uses: azure/login@v1
+
+              with:
+                  client-id: ${{ secrets.AZURE_CLIENT_ID }}
+                  tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+                  subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+
+            - name: Download Plan Artifact
+              uses: actions/download-artifact@v4
+              with:
+                name: terraform-plan
+                path: ${{ env.working-directory }}
+
+            - name: Terraform_init
+              run: terraform init
+              working-directory: ${{ env.working-directory }}
+
+            - name: Apply Terraform
+              run: terraform apply -auto-approve tfplan
+              working-directory: ${{ env.working-directory }}
