@@ -61,12 +61,16 @@ jobs:
                   client-id: ${{ secrets.AZURE_CLIENT_ID }}
                   tenant-id: ${{ secrets.AZURE_TENANT_ID }}
                   subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-
-            - name: tfsec tests
+            - name: Install tfsec
               run: |
-                  curl -L https://raw.githubusercontent.com/aquasecurity/tfsec/master/scripts/install_linux.sh | bash
-                  tfsec .
+                curl -sSL -o tfsec https://github.com/aquasecurity/tfsec/releases/latest/download/tfsec-linux-amd64
+                chmod +x tfsec
+                sudo mv tfsec /usr/local/bin/tfsec
+
+            - name: Run tfsec
+              run: tfsec .
               working-directory: ./Environment/dev
+
     Deploy:
         needs: [Build, Tests]
         runs-on: self-hosted
