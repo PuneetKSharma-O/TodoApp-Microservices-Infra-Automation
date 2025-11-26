@@ -48,6 +48,8 @@ jobs:
 
     Tests:
         runs-on: self-hosted
+        needs: Build
+        if: needs.Build.result == 'success'
         steps:
             - name: Checkout code
               uses: actions/checkout@v2
@@ -68,6 +70,7 @@ jobs:
     Deploy:
         needs: [Build, Tests]
         runs-on: self-hosted
+        environment: dev
         if: needs.Build.result == 'success' && needs.Tests.result == 'success' && github.ref == 'refs/heads/main'
         steps:
             - name: Checkout code
