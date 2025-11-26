@@ -47,7 +47,7 @@ jobs:
                 path: ${{ env.working-directory }}/tfplan
 
     Tests:
-        runs-on: self-hosted
+        runs-on: ubuntu-latest
         needs: Build
         if: needs.Build.result == 'success'
         steps:
