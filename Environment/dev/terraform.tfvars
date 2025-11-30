@@ -94,7 +94,7 @@ key_vaults = {
 key_vault_secret = {
   secret1 = {
     secret_name         = "db-user-login"
-    secret_type         = "dbadminuser"
+    secret_type         = "sqladminuser"
     key_vault_name      = "dev-todo-kv-1234567"
     resource_group_name = "rg-dev1"
   }
