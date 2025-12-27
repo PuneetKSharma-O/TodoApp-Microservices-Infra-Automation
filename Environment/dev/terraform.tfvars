@@ -10,7 +10,7 @@ resource_group = {
 }
 storage_account = {
   "stg1" = {
-    name                     = "devtodomicrostg123456"
+    name                     = "devtodomicrostg60987"
     resource_group_name      = "rg-dev1"
     location                 = "centralindia"
     account_tier             = "Standard"
@@ -32,7 +32,7 @@ kubernetes_cluster = {
     default_node_pool = {
       name       = "default"
       node_count = 2
-      vm_size    = "Standard_B2s"
+      vm_size    = "standard_b2s_v2"
     }
     ingress_application_gateway = {
       enabled = true
