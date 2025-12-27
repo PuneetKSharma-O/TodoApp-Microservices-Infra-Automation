@@ -10,7 +10,7 @@ resource_group = {
 }
 storage_account = {
   "stg1" = {
-    name                     = "devtodomicrostg1234560987"
+    name                     = "devtodomicrostg60987"
     resource_group_name      = "rg-dev1"
     location                 = "centralindia"
     account_tier             = "Standard"
